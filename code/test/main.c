@@ -40,5 +40,5 @@ int main(void)
 	newCmdChar('!');
 	res=cmdProcessor();
 	printf("cmdProcessor output to S with wrong SOF: % d\n\r", res);
-	
+	return 0;
 }

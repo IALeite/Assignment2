@@ -9,10 +9,10 @@
 # 	file, and the test file is testMODULENAME.c
 # If the rules above are obeyed only MODULE_NAME needs to be adjusted
 
-MODULE_NAME = MyVectorLib
-
+MODULE_NAME = cmdproc
+MAIN = main
 # Paths
-UNITY_ROOT = ..
+UNITY_ROOT = unity
 SRC_FOLDER = src
 TEST_FOLDER = test
 
@@ -38,8 +38,8 @@ CFLAGS += -Wundef
 CFLAGS += -Wold-style-definition
 #CFLAGS += -Wno-misleading-indentation
 
-TARGET=test$(MODULE_NAME)
-SRC_FILES=$(UNITY_ROOT)/src/unity.c $(SRC_FOLDER)/$(MODULE_NAME).c  $(TEST_FOLDER)/test$(MODULE_NAME).c
+TARGET=$(MAIN)
+SRC_FILES=$(UNITY_ROOT)/unity.c $(SRC_FOLDER)/$(MODULE_NAME).c  $(TEST_FOLDER)/$(MAIN).c
 INC_DIRS=-I$(SRC_FOLDER) -I$(UNITY_ROOT)/src
 SYMBOLS=
 
