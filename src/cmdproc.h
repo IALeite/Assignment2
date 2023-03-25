@@ -10,7 +10,9 @@
 
 /* Function prototypes */
 int cmdProcessor(void);
+
 int newCmdChar(unsigned char newChar);
-void resetCmdString(void);
+
+int resetCmdString(void);
 
 #endif

@@ -10,35 +10,90 @@
 /* ***************************************************** */
 #include <stdio.h>
 #include "cmdproc.h"
+#include "../unity/unity.h"
 
-extern char Kp, Ti, Td;
+extern char Kp, Ti, Td, CheckSum;
 
-int main(void) 
+
+void test_cmdProcessor_should_res_KP_Ti_Td(void)
 {
-	int res;
-	
-	printf("Command processor test app\n\r");
+	char CheckSum = (unsigned char)('P'+'1'+'2'+'3');
 	resetCmdString();
 	newCmdChar('#');
 	newCmdChar('P');
 	newCmdChar('1');
 	newCmdChar('2');
 	newCmdChar('3');
-	newCmdChar((unsigned char)('P'+'1'+'2'+'3'));
+	newCmdChar(CheckSum);
 	newCmdChar('!');
-	res=cmdProcessor();
-	printf("cmdProcessor output to P 1 2 3: %d, Kp=%c,Ti=%c,Td=%c \n\r", res, Kp, Ti, Td);
+	TEST_ASSERT_EQUAL_INT(0,cmdProcessor());
+	TEST_ASSERT_EQUAL_INT('1', Kp);
+	TEST_ASSERT_EQUAL_INT('2', Ti);
+	TEST_ASSERT_EQUAL_INT('3', Td);	
+}
+
+
+void test_EmptyString_should_0(void)
+{
+	resetCmdString();
+	TEST_ASSERT_EQUAL_INT(-1,cmdProcessor());
+}
+
+void test_FullString(void)
+{
+	resetCmdString();
+	newCmdChar('#');
+	newCmdChar('#');
+	newCmdChar('#');
+	newCmdChar('#');
+	newCmdChar('#');
+	newCmdChar('#');
+	newCmdChar('#');
+	newCmdChar('#');
+	newCmdChar('#');
+	newCmdChar('#');
+	TEST_ASSERT_EQUAL_INT(-5,newCmdChar('#'));
 	
+}
+
+void test_InvalidCmd(void)
+{
+	resetCmdString();
 	newCmdChar('#');
 	newCmdChar('D');
 	newCmdChar('!');
-	res=cmdProcessor();
-	printf("cmdProcessor output to D (typo, should be S): % d\n\r", res);
-	
+	TEST_ASSERT_EQUAL_INT(-2,cmdProcessor());
+}
+
+void test_InvalidSOF(void)
+{	
+	resetCmdString();
 	newCmdChar('+');
 	newCmdChar('S');
 	newCmdChar('!');
-	res=cmdProcessor();
-	printf("cmdProcessor output to S with wrong SOF: % d\n\r", res);
-	return 0;
+	TEST_ASSERT_EQUAL_INT(-7,cmdProcessor());
+}
+
+void test_InvalidEOF(void)
+{	
+	resetCmdString();
+	newCmdChar('#');
+	newCmdChar('S');
+	newCmdChar('-');
+	TEST_ASSERT_EQUAL_INT_MESSAGE(-6,cmdProcessor(),"wrong char passed!");
+	newCmdChar('#');
+	newCmdChar('S');
+	TEST_ASSERT_EQUAL_INT_MESSAGE(-6,cmdProcessor(),"Nothing passed");
+}
+
+int main(void) 
+{
+	UNITY_BEGIN();
+	RUN_TEST(test_cmdProcessor_should_res_KP_Ti_Td);
+	RUN_TEST(test_EmptyString_should_0);
+	RUN_TEST(test_FullString);
+	RUN_TEST(test_InvalidCmd);
+	RUN_TEST(test_InvalidSOF);
+	RUN_TEST(test_InvalidEOF);
+	return UNITY_END();
 }
