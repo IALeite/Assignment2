@@ -15,7 +15,7 @@
 
 /* PID parameters */
 /* Note that in a real application these vars would be extern */
- char Kp, Ti, Td, CheckSum;
+char Kp, Ti, Td, CheckSum;
 
 /* Process variables */ 
 /* Note that in a real application these vars would be extern */
@@ -25,35 +25,6 @@ int setpoint, output, error;
 static char cmdString[MAX_CMDSTRING_SIZE];
 static unsigned char cmdStringLen = 0; 
 
-/* ************************************************************ */
-/* Processes the the chars received so far looking for commands */
-/* Returns:                                                     */
-/*   0: if a valid command was found and executed        	    */
-/* 	-1: if empty string or incomplete command found             */
-/* 	-2: if an invalid command was found                         */
-/* 	-3: if a CS error is detected (command not executed)        */
-/* 	-4: if string format is wrong                               */
-/*  -5: if string size is full and a new char is inputted 		*/
-/*  -6: if the end of string char isn't found					*/
-/*	-7: if the start of string char isn't found					*/
-/*	-8: if missing Kp value 									*/
-/*	-9: if missing Ti value										*/
-/* -10: if missing Td value 									*/
-/* -11: if wrong or missing CheckSum value 						*/
-/* ************************************************************ */
-
-enum{ 	ERR_SUM=-11,
-		ERR_Td,				/*-10 */
-		ERR_Ti,				/* -9 */
-		ERR_Kp,				/* -8 */
-		ERR_SOF,			/* -7 */
-		ERR_EOF,			/* -6 */	
-		STR_FULL,			/* -5 */
-		STR_FORMAT_ERR,		/* -4 */
-		CS_ERR,				/* -3 */
-		INV_COMAND,			/* -2 */
-		EMPTY_STRING,		/* -1 */
-		OK};				/* 0  */
 
 int cmdProcessor(void)
 {
@@ -88,43 +59,43 @@ int cmdProcessor(void)
 	
 	/* If a SOF was found look for commands */
 	if(i < cmdStringLen) {
-
-		/* In case of the P command is detected */
-		if(cmdString[i+1] == 'P') { 
+		switch(cmdString[i+1]){
+			/* In case of the P command is detected */
+			case 'P': 
+				/* If there is not enough values */
+				if(j - i != 6){
+					resetCmdString();
+					return CS_ERR;
+				}
+					
+				Kp = cmdString[i+2];
+				Ti = cmdString[i+3];
+				Td = cmdString[i+4];
+				
+				/* Wrong SumCheck on string return error */
+				if((char)(cmdString[i+1]+Kp+Ti+Td)!=cmdString[i+5]){
+					printf("%u",cmdString[i+5]);
+					resetCmdString();
+					return ERR_SUM;
+					}
+				break;
 			
-			/* If there is no value for Kp returns error */
-			if(cmdString[i+2]=='!')
-				return ERR_Kp;
-			Kp = cmdString[i+2];
-			
-			/* If there is no value for Ti returns error */
-			if(cmdString[i+3]=='!')
-				return ERR_Ti;
-			Ti = cmdString[i+3];
-
-			/* If there is no value for Td returns error */
-			if(cmdString[i+4]=='!')
-				return ERR_Td;
-			Td = cmdString[i+4];
-			
-			/* Wrong SumCheck on string return error */
-			if((char)(cmdString[i+1]+Kp+Ti+Td)!=cmdString[i+5])
-				return ERR_SUM;
-
-			resetCmdString();
-			return OK;
+			/* In case of the S command is detected */
+			case 'S':
+				if(j - i != 2){
+					resetCmdString();
+					return CS_ERR;
+				}
+				printf("Setpoint = %d, Output = %d, Error = %d\n", setpoint, output, error);
+				resetCmdString();
+				break;
+			case 'R':
+			/* cmd string not null and SOF not found */
+			default:
+				return INV_COMAND;
 		}
-
-		/* In case of the S command is detected */
-		if(cmdString[i+1] == 'S') {
-			printf("Setpoint = %d, Output = %d, Error = %d", setpoint, output, error);
-			resetCmdString();
-			return OK;
-		}		
 	}
-	
-	/* cmd string not null and SOF not found */
-	return INV_COMAND;
+			return OK;
 
 }
 
@@ -142,9 +113,31 @@ int newCmdChar(unsigned char newChar)
 		cmdStringLen +=1;
 		return OK;		
 	}
-	
 	/* If cmd string full return error */
 	return STR_FULL;
+}
+
+int newCmdStr(char* newCmd)
+{
+	int cnt = 0;
+	int i;
+	
+	for(i = 0; newCmd[i] != '\0'; i++)
+	{
+		cnt++;
+	}
+	
+	if(cnt > MAX_CMDSTRING_SIZE)
+	{
+		return OVF_STR;
+	}
+	
+	for(i = 0; newCmd[i] != '\0'; i++)
+	{
+		cmdString[i] = (unsigned char)newCmd[i];
+	}
+
+	return OK;
 }
 
 /* ******************************** */
@@ -157,7 +150,7 @@ int newCmdChar(unsigned char newChar)
 
 
 /* ************************** */
-/* Resets the commanbd string */  
+/* Resets the command string */  
 /* ************************** */
 int resetCmdString(void)
 {

@@ -13,6 +13,7 @@
 #include "../unity/unity.h"
 
 extern char Kp, Ti, Td, CheckSum;
+extern int setpoint, output, error; 
 
 
 void test_cmdProcessor_should_res_KP_Ti_Td(void)
@@ -63,6 +64,10 @@ void test_InvalidCmd(void)
 void test_InvalidSOF(void)
 {	
 	resetCmdString();
+	newCmdChar('S');	/* check no SOF */
+	newCmdChar('!');
+	TEST_ASSERT_EQUAL_INT(-7,cmdProcessor());
+	resetCmdString();
 	newCmdChar('+');	/* check invalid SOF */
 	newCmdChar('S');
 	newCmdChar('!');
@@ -72,68 +77,87 @@ void test_InvalidSOF(void)
 void test_InvalidEOF(void)
 {	
 	resetCmdString();
-	newCmdChar('#');
+	newCmdChar('#');	/* check wrong EOF */
 	newCmdChar('S');
 	newCmdChar('-');
 	TEST_ASSERT_EQUAL_INT_MESSAGE(-6,cmdProcessor(),"wrong char passed!");
-	newCmdChar('#'); 	/* check invalid EOF */
+	newCmdChar('#'); 	/* check no EOF */
 	newCmdChar('S');
 	TEST_ASSERT_EQUAL_INT_MESSAGE(-6,cmdProcessor(),"Nothing passed");
 }
 
 
-void test_invalid_Kp(void)
+void test_invalid_P_CmdWrongNumParam(void)
 {
-	/*check Kp error */
+	/*check no Kp, Ti Td*/
 	resetCmdString();
 	newCmdChar('#');
 	newCmdChar('P');
 	newCmdChar('!');
-	TEST_ASSERT_EQUAL_INT_MESSAGE(-8,cmdProcessor(),"missing value Kp");
-}
-
-void test_invalid_Ti(void)
-{
-	/*check Ti error */
+	TEST_ASSERT_EQUAL_INT_MESSAGE(-3,cmdProcessor(),"missing values still run");
+	/*check no Ti, Td*/
 	resetCmdString();
 	newCmdChar('#');
 	newCmdChar('P');
 	newCmdChar('1');
 	newCmdChar('!');
-	TEST_ASSERT_EQUAL_INT_MESSAGE(-9,cmdProcessor(),"missing value Ti");
-}
-
-void test_invalid_Td(void)
-{
-	/* check Td error */
+	TEST_ASSERT_EQUAL_INT_MESSAGE(-3,cmdProcessor(),"missing values still run");
+	/*check no Td*/
 	resetCmdString();
 	newCmdChar('#');
 	newCmdChar('P');
 	newCmdChar('1');
 	newCmdChar('2');
 	newCmdChar('!');
-	TEST_ASSERT_EQUAL_INT_MESSAGE(-10,cmdProcessor(),"missing value Td");
+	TEST_ASSERT_EQUAL_INT_MESSAGE(-3,cmdProcessor(),"missing values still run");
+	/*check no Checksum*/
+	resetCmdString();
+	newCmdChar('#');
+	newCmdChar('P');
+	newCmdChar('1');
+	newCmdChar('2');
+	newCmdChar('!');
+	TEST_ASSERT_EQUAL_INT_MESSAGE(-3,cmdProcessor(),"missing values still run");
 }
 
 void test_invalid_sumCheck(void)
 {
+	char CheckSum = (unsigned char)('P'+'1'+'2'+'3'+'+');
 	/* check SumCheck error */
-	resetCmdString();
 	newCmdChar('#');
 	newCmdChar('P');
 	newCmdChar('1');
 	newCmdChar('2');
 	newCmdChar('3');
+	newCmdChar(CheckSum);
 	newCmdChar('!');
-	TEST_ASSERT_EQUAL_INT_MESSAGE(-11,cmdProcessor(),"missing or wrong SumCheck");
+	TEST_ASSERT_EQUAL_INT_MESSAGE(-8,cmdProcessor(),"not wrong SumCheck");
 }
 
 void test_cmdProcessor_S(void){
+
 	resetCmdString();
 	newCmdChar('#');
 	newCmdChar('S');
 	newCmdChar('!');
 	TEST_ASSERT_EQUAL_INT(0,cmdProcessor());
+	
+	resetCmdString();
+	newCmdChar('#');
+	newCmdChar('S');
+	newCmdChar('1');
+	newCmdChar('!');
+	TEST_ASSERT_EQUAL_INT(-3,cmdProcessor());
+}
+
+void test_newCmdStr(void){
+	char test_string_1[] = "QWERTYQWERTYQUERTY\0";
+	TEST_ASSERT_EQUAL_INT(-9,newCmdStr(test_string_1));
+	TEST_ASSERT_NOT_EQUAL_INT_MESSAGE(0,cmdProcessor(), "BIG STRING TEST");
+	
+	char test_string_2[]= "#P123\0";
+	TEST_ASSERT_EQUAL_INT(0,newCmdStr(test_string_2));
+	TEST_ASSERT_NOT_EQUAL_INT_MESSAGE(0,cmdProcessor(),"SMALL STRING TEST");
 }
 
 int main(void) 
@@ -145,10 +169,9 @@ int main(void)
 	RUN_TEST(test_InvalidCmd);
 	RUN_TEST(test_InvalidSOF);
 	RUN_TEST(test_InvalidEOF);
-	RUN_TEST(test_invalid_Kp);
-	RUN_TEST(test_invalid_Ti);
-	RUN_TEST(test_invalid_Td);
+	RUN_TEST(test_invalid_P_CmdWrongNumParam);
 	RUN_TEST(test_invalid_sumCheck);
 	RUN_TEST(test_cmdProcessor_S);
+	RUN_TEST(test_newCmdStr);
 	return UNITY_END();
 }
