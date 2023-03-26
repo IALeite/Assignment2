@@ -33,16 +33,27 @@ static unsigned char cmdStringLen = 0;
 /* 	-2: if an invalid command was found                         */
 /* 	-3: if a CS error is detected (command not executed)        */
 /* 	-4: if string format is wrong                               */
+/*  -5: if string size is full and a new char is inputted 		*/
+/*  -6: if the end of string char isn't found					*/
+/*	-7: if the start of string char isn't found					*/
+/*	-8: if missing Kp value 									*/
+/*	-9: if missing Ti value										*/
+/* -10: if missing Td value 									*/
+/* -11: if wrong or missing CheckSum value 						*/
 /* ************************************************************ */
 
-enum{ 	ERR_SOF = -7,
-		ERR_EOF,
-		STR_FULL,
-		STR_FORMAT_ERR,
-		CS_ERR,
-		INV_COMAND,
-		EMPTY_STRING,
-		OK};
+enum{ 	ERR_SUM=-11,
+		ERR_Td,				/*-10 */
+		ERR_Ti,				/* -9 */
+		ERR_Kp,				/* -8 */
+		ERR_SOF,			/* -7 */
+		ERR_EOF,			/* -6 */	
+		STR_FULL,			/* -5 */
+		STR_FORMAT_ERR,		/* -4 */
+		CS_ERR,				/* -3 */
+		INV_COMAND,			/* -2 */
+		EMPTY_STRING,		/* -1 */
+		OK};				/* 0  */
 
 int cmdProcessor(void)
 {
@@ -58,6 +69,7 @@ int cmdProcessor(void)
 		}
 	}
 	
+	/* Send error in case SOF isn't found */
 	if (i == cmdStringLen){
 	 return ERR_SOF;
 	}
@@ -69,21 +81,42 @@ int cmdProcessor(void)
 		}
 	}
 	
+	/* Send error in case EOF isn't found */
 	if (cmdString[j] != '!'){
 	 return ERR_EOF;
 	}
 	
 	/* If a SOF was found look for commands */
 	if(i < cmdStringLen) {
-		if(cmdString[i+1] == 'P') { /* P command detected */
+
+		/* In case of the P command is detected */
+		if(cmdString[i+1] == 'P') { 
+			
+			/* If there is no value for Kp returns error */
+			if(cmdString[i+2]=='!')
+				return ERR_Kp;
 			Kp = cmdString[i+2];
+			
+			/* If there is no value for Ti returns error */
+			if(cmdString[i+3]=='!')
+				return ERR_Ti;
 			Ti = cmdString[i+3];
+
+			/* If there is no value for Td returns error */
+			if(cmdString[i+4]=='!')
+				return ERR_Td;
 			Td = cmdString[i+4];
+			
+			/* Wrong SumCheck on string return error */
+			if((char)(cmdString[i+1]+Kp+Ti+Td)!=cmdString[i+5])
+				return ERR_SUM;
+
 			resetCmdString();
 			return OK;
 		}
-		
-		if(cmdString[i+1] == 'S') { /* S command detected */
+
+		/* In case of the S command is detected */
+		if(cmdString[i+1] == 'S') {
 			printf("Setpoint = %d, Output = %d, Error = %d", setpoint, output, error);
 			resetCmdString();
 			return OK;
@@ -114,9 +147,14 @@ int newCmdChar(unsigned char newChar)
 	return STR_FULL;
 }
 
-/**
- * getCmdStringLen(void)
- */
+/* ******************************** */
+/* Displays string length		 	*/
+/* ******************************** */
+ void getCmdStringLen(void)
+{
+	printf("String length:%u",cmdStringLen);
+}
+
 
 /* ************************** */
 /* Resets the commanbd string */  

@@ -42,16 +42,11 @@ void test_EmptyString_should_0(void)
 void test_FullString(void)
 {
 	resetCmdString();
-	newCmdChar('#');
-	newCmdChar('#');
-	newCmdChar('#');
-	newCmdChar('#');
-	newCmdChar('#');
-	newCmdChar('#');
-	newCmdChar('#');
-	newCmdChar('#');
-	newCmdChar('#');
-	newCmdChar('#');
+	/* Fills the string max size(10) with SOF */
+	int i;
+	for(i=0;i<10;i++){
+		newCmdChar('#');
+	}
 	TEST_ASSERT_EQUAL_INT(-5,newCmdChar('#'));
 	
 }
@@ -60,7 +55,7 @@ void test_InvalidCmd(void)
 {
 	resetCmdString();
 	newCmdChar('#');
-	newCmdChar('D');
+	newCmdChar('D');	/*check invalid command D */
 	newCmdChar('!');
 	TEST_ASSERT_EQUAL_INT(-2,cmdProcessor());
 }
@@ -68,7 +63,7 @@ void test_InvalidCmd(void)
 void test_InvalidSOF(void)
 {	
 	resetCmdString();
-	newCmdChar('+');
+	newCmdChar('+');	/* check invalid SOF */
 	newCmdChar('S');
 	newCmdChar('!');
 	TEST_ASSERT_EQUAL_INT(-7,cmdProcessor());
@@ -81,9 +76,64 @@ void test_InvalidEOF(void)
 	newCmdChar('S');
 	newCmdChar('-');
 	TEST_ASSERT_EQUAL_INT_MESSAGE(-6,cmdProcessor(),"wrong char passed!");
-	newCmdChar('#');
+	newCmdChar('#'); 	/* check invalid EOF */
 	newCmdChar('S');
 	TEST_ASSERT_EQUAL_INT_MESSAGE(-6,cmdProcessor(),"Nothing passed");
+}
+
+
+void test_invalid_Kp(void)
+{
+	/*check Kp error */
+	resetCmdString();
+	newCmdChar('#');
+	newCmdChar('P');
+	newCmdChar('!');
+	TEST_ASSERT_EQUAL_INT_MESSAGE(-8,cmdProcessor(),"missing value Kp");
+}
+
+void test_invalid_Ti(void)
+{
+	/*check Ti error */
+	resetCmdString();
+	newCmdChar('#');
+	newCmdChar('P');
+	newCmdChar('1');
+	newCmdChar('!');
+	TEST_ASSERT_EQUAL_INT_MESSAGE(-9,cmdProcessor(),"missing value Ti");
+}
+
+void test_invalid_Td(void)
+{
+	/* check Td error */
+	resetCmdString();
+	newCmdChar('#');
+	newCmdChar('P');
+	newCmdChar('1');
+	newCmdChar('2');
+	newCmdChar('!');
+	TEST_ASSERT_EQUAL_INT_MESSAGE(-10,cmdProcessor(),"missing value Td");
+}
+
+void test_invalid_sumCheck(void)
+{
+	/* check SumCheck error */
+	resetCmdString();
+	newCmdChar('#');
+	newCmdChar('P');
+	newCmdChar('1');
+	newCmdChar('2');
+	newCmdChar('3');
+	newCmdChar('!');
+	TEST_ASSERT_EQUAL_INT_MESSAGE(-11,cmdProcessor(),"missing or wrong SumCheck");
+}
+
+void test_cmdProcessor_S(void){
+	resetCmdString();
+	newCmdChar('#');
+	newCmdChar('S');
+	newCmdChar('!');
+	TEST_ASSERT_EQUAL_INT(0,cmdProcessor());
 }
 
 int main(void) 
@@ -95,5 +145,10 @@ int main(void)
 	RUN_TEST(test_InvalidCmd);
 	RUN_TEST(test_InvalidSOF);
 	RUN_TEST(test_InvalidEOF);
+	RUN_TEST(test_invalid_Kp);
+	RUN_TEST(test_invalid_Ti);
+	RUN_TEST(test_invalid_Td);
+	RUN_TEST(test_invalid_sumCheck);
+	RUN_TEST(test_cmdProcessor_S);
 	return UNITY_END();
 }
