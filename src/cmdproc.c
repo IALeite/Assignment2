@@ -99,6 +99,34 @@ int cmdProcessor(void)
 				Td = 0;
 				resetCmdString();
 				break;
+
+			case 'A':
+				/* If there is not enough values */
+				if(j - i != 14){
+					resetCmdString();
+					return CS_ERR;
+				}
+				/* passing Char value to decimal so its well interpreted */
+				Kp = (cmdString[i+2]-'0')*100 +(cmdString[i+3]-'0')*10+ (cmdString[i+4]-'0');
+				Ti = (cmdString[i+5]-'0')*100 +(cmdString[i+6]-'0')*10+ (cmdString[i+7]-'0');
+				Td = (cmdString[i+8]-'0')*100 +(cmdString[i+9]-'0')*10+ (cmdString[i+10]-'0');
+				
+				/* temporary variables */
+				char checkssum=0;
+				int a;
+
+				for (a=0;a<11;a++){
+					checkssum+=(unsigned char)cmdString[a];
+				}
+
+				/* Wrong SumCheck on string return error */
+				if((char)(checkssum!=((cmdString[i+11]-'0')*100+(cmdString[i+12]-'0')*10+cmdString[i+13]-'0')))
+				{
+					resetCmdString();
+					return ERR_SUM;
+				}
+				break;
+
 			default:
 				return INV_COMAND;
 		}
@@ -113,6 +141,7 @@ int newCmdChar(unsigned char newChar)
 	if (cmdStringLen < MAX_CMDSTRING_SIZE) {
 		cmdString[cmdStringLen] = newChar;
 		cmdStringLen +=1;
+
 		return OK;		
 	}
 	/* If cmd string full return error */
@@ -166,9 +195,78 @@ int newCmdStr(char* newCmd)
 	return OK;
 }
 
-
 int resetCmdString(void)
 {
 	cmdStringLen = 0;		
 	return OK;
+}
+
+int newCmdCharASCII(unsigned char newChar)
+{
+	/* If cmd string not full add char to it */
+	if (cmdStringLen < MAX_CMDSTRING_SIZE) {
+		int a= newChar%10;
+		int b= newChar/10;
+
+		/* if value in newChar is higher than 100*/
+		if(b>=10){
+			cmdString[cmdStringLen]='0'+ (b/10);
+			cmdStringLen++;
+			cmdString[cmdStringLen]='0'+ (b%10);
+			cmdStringLen++;
+			cmdString[cmdStringLen]='0'+a;
+			cmdStringLen++; 
+			return OK;
+		}
+
+		/* if value in newChar is between 10 and 99 */
+		if(b!=0){
+			cmdString[cmdStringLen]='0';
+			cmdStringLen++;
+			cmdString[cmdStringLen]='0'+b;
+			cmdStringLen++;
+			cmdString[cmdStringLen]='0'+a;
+			cmdStringLen++;
+
+			return OK;
+		}
+
+		/* if value in newChar is less than 10 */
+		cmdString[cmdStringLen]='0';
+		cmdStringLen++;
+		
+		cmdString[cmdStringLen]='0';
+		cmdStringLen++;
+
+		cmdString[cmdStringLen]='0'+a;
+		cmdStringLen++;
+		
+		return OK;		
+	}
+	/* If cmd string full return error */
+	return STR_FULL;
+}
+
+
+void stringDebug(void){
+	printf("%c",cmdString[0]);
+	printf("%c",cmdString[1]);
+	int i;
+	for(i=0;i<cmdStringLen-1;i++){
+		printf("%c",cmdString[i+2]);
+		if((i+1)%3==0)
+			printf(" ");
+	}
+	printf("\n");
+}
+
+
+
+unsigned char checkSumCalc(void){
+	int i;
+	char sum;
+	for(i=0;i<cmdStringLen;i++){
+		sum+=cmdString[i];
+	}
+	return sum;
 }

@@ -1,7 +1,7 @@
 #ifndef __CMD_PROC_H_
 #define __CMD_PROC_H_
 
-#define MAX_CMDSTRING_SIZE 10 /* Maximum size of the command string */ 
+#define MAX_CMDSTRING_SIZE 15 /* Maximum size of the command string */ 
 #define SOF_SYM '#'	          /* Start of Frame Symbol */
 #define EOF_SYM '!'           /* End of Frame Symbol */
 
@@ -56,5 +56,14 @@ int resetCmdString(void);
  * \returns 0: OK -7: string too big 
  */
 int newCmdStr(char* newCmd);
+
+
+int cmdProcessorASCII(void);
+
+int newCmdCharASCII(unsigned char newChar);
+
+void stringDebug(void);
+
+unsigned char checkSumCalc(void);
 
 #endif

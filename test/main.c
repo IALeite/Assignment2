@@ -17,6 +17,7 @@ void test_cmdProcessor_should_res_KP_Ti_Td(void)
 	newCmdChar('3');
 	newCmdChar(CheckSum);
 	newCmdChar('!');
+	stringDebug();
 	TEST_ASSERT_EQUAL_INT(0,cmdProcessor());
 	TEST_ASSERT_EQUAL_INT('1', Kp);
 	TEST_ASSERT_EQUAL_INT('2', Ti);
@@ -35,7 +36,7 @@ void test_FullString(void)
 	resetCmdString();
 	/* Fills the string max size(10) with SOF */
 	int i;
-	for(i=0;i<10;i++){
+	for(i=0;i<15;i++){
 		newCmdChar('#');
 	}
 	TEST_ASSERT_EQUAL_INT(-5,newCmdChar('#'));
@@ -154,6 +155,25 @@ void test_newCmdStr(void){
 	TEST_ASSERT_EQUAL_INT_MESSAGE(0,cmdProcessor(),"S cmd");
 }
 
+
+void test_cmdProcessorASCII(void){
+	resetCmdString();
+	newCmdChar('#');
+	newCmdChar('A');
+	newCmdCharASCII(1);
+	newCmdCharASCII(10);
+	newCmdCharASCII(24);
+	newCmdCharASCII(checkSumCalc());
+	newCmdChar('!');
+	stringDebug();
+	TEST_ASSERT_EQUAL_INT(0,cmdProcessor());
+	TEST_ASSERT_EQUAL_INT(1, Kp);
+	TEST_ASSERT_EQUAL_INT(10, Ti);
+	TEST_ASSERT_EQUAL_INT(24, Td);	
+
+}
+
+
 int main(void) 
 {
 	UNITY_BEGIN();
@@ -167,5 +187,6 @@ int main(void)
 	RUN_TEST(test_invalid_sumCheck);
 	RUN_TEST(test_cmdProcessor_S);
 	RUN_TEST(test_newCmdStr);
+	RUN_TEST(test_cmdProcessorASCII);
 	return UNITY_END();
 }
