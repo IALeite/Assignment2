@@ -1,13 +1,3 @@
-/* ***************************************************** */
-/* SETR 22/23, Paulo Pedreiras                           */
-/* Base code for Unit Testing                            */
-/*   A few tests to the cmdProcessor                     */
-/*      just to illustrate how it works                  */
-/*   Shoud be improved (e.g. test more cases)            */
-/*                                                       */
-/* Compile with: gcc cmdproc.c main.c -o main            */
-/*                                                       */
-/* ***************************************************** */
 #include <stdio.h>
 #include "cmdproc.h"
 #include "../unity/unity.h"
@@ -66,12 +56,12 @@ void test_InvalidSOF(void)
 	resetCmdString();
 	newCmdChar('S');	/* check no SOF */
 	newCmdChar('!');
-	TEST_ASSERT_EQUAL_INT(-7,cmdProcessor());
+	TEST_ASSERT_EQUAL_INT(-4,cmdProcessor());
 	resetCmdString();
 	newCmdChar('+');	/* check invalid SOF */
 	newCmdChar('S');
 	newCmdChar('!');
-	TEST_ASSERT_EQUAL_INT(-7,cmdProcessor());
+	TEST_ASSERT_EQUAL_INT(-4,cmdProcessor());
 }
 
 void test_InvalidEOF(void)
@@ -80,10 +70,10 @@ void test_InvalidEOF(void)
 	newCmdChar('#');	/* check wrong EOF */
 	newCmdChar('S');
 	newCmdChar('-');
-	TEST_ASSERT_EQUAL_INT_MESSAGE(-6,cmdProcessor(),"wrong char passed!");
+	TEST_ASSERT_EQUAL_INT_MESSAGE(-4,cmdProcessor(),"wrong char passed!");
 	newCmdChar('#'); 	/* check no EOF */
 	newCmdChar('S');
-	TEST_ASSERT_EQUAL_INT_MESSAGE(-6,cmdProcessor(),"Nothing passed");
+	TEST_ASSERT_EQUAL_INT_MESSAGE(-4,cmdProcessor(),"Nothing passed");
 }
 
 
@@ -131,7 +121,7 @@ void test_invalid_sumCheck(void)
 	newCmdChar('3');
 	newCmdChar(CheckSum);
 	newCmdChar('!');
-	TEST_ASSERT_EQUAL_INT_MESSAGE(-8,cmdProcessor(),"not wrong SumCheck");
+	TEST_ASSERT_EQUAL_INT_MESSAGE(-6,cmdProcessor(),"not wrong SumCheck");
 }
 
 void test_cmdProcessor_S(void){
@@ -152,12 +142,16 @@ void test_cmdProcessor_S(void){
 
 void test_newCmdStr(void){
 	char test_string_1[] = "QWERTYQWERTYQUERTY\0";
-	TEST_ASSERT_EQUAL_INT(-9,newCmdStr(test_string_1));
+	TEST_ASSERT_EQUAL_INT(-7,newCmdStr(test_string_1));
 	TEST_ASSERT_NOT_EQUAL_INT_MESSAGE(0,cmdProcessor(), "BIG STRING TEST");
 	
-	char test_string_2[]= "#P123\0";
+	char test_string_2[]= "P123\0";
 	TEST_ASSERT_EQUAL_INT(0,newCmdStr(test_string_2));
-	TEST_ASSERT_NOT_EQUAL_INT_MESSAGE(0,cmdProcessor(),"SMALL STRING TEST");
+	TEST_ASSERT_EQUAL_INT_MESSAGE(0,cmdProcessor(),"SMALL STRING TEST");
+	
+	char test_string_3[]= "S\0";
+	TEST_ASSERT_EQUAL_INT(0,newCmdStr(test_string_3));
+	TEST_ASSERT_EQUAL_INT_MESSAGE(0,cmdProcessor(),"S cmd");
 }
 
 int main(void) 

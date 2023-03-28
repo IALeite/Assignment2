@@ -42,7 +42,7 @@ int cmdProcessor(void)
 	
 	/* Send error in case SOF isn't found */
 	if (i == cmdStringLen){
-	 return ERR_SOF;
+	 return STR_FORMAT_ERR;
 	}
 	
 	/* Find index of EOF */
@@ -54,7 +54,7 @@ int cmdProcessor(void)
 	
 	/* Send error in case EOF isn't found */
 	if (cmdString[j] != '!'){
-	 return ERR_EOF;
+	 return STR_FORMAT_ERR;
 	}
 	
 	/* If a SOF was found look for commands */
@@ -90,7 +90,15 @@ int cmdProcessor(void)
 				resetCmdString();
 				break;
 			case 'R':
-			/* cmd string not null and SOF not found */
+				if(j - i != 2){
+					resetCmdString();
+					return CS_ERR;
+				}
+				Kp = 0;
+				Ti = 0;
+				Td = 0;
+				resetCmdString();
+				break;
 			default:
 				return INV_COMAND;
 		}
@@ -99,12 +107,6 @@ int cmdProcessor(void)
 
 }
 
-/* ******************************** */
-/* Adds a char to the cmd string 	*/
-/* Returns: 				        */
-/*  	 0: if success 		        */
-/* 		-1: if cmd string full 	    */
-/* ******************************** */
 int newCmdChar(unsigned char newChar)
 {
 	/* If cmd string not full add char to it */
@@ -120,38 +122,51 @@ int newCmdChar(unsigned char newChar)
 int newCmdStr(char* newCmd)
 {
 	int cnt = 0;
-	int i;
+	int i,checksum = 0;
 	
+	/*String size*/
 	for(i = 0; newCmd[i] != '\0'; i++)
 	{
 		cnt++;
 	}
 	
-	if(cnt > MAX_CMDSTRING_SIZE)
+	/*String size error ( -1 to add checksum)*/
+	if(cnt > (MAX_CMDSTRING_SIZE - 3))
 	{
 		return OVF_STR;
 	}
 	
-	for(i = 0; newCmd[i] != '\0'; i++)
+	
+	cmdString[0] = '#';
+	
+	/*checksum*/
+	if (cnt > 1)
 	{
-		cmdString[i] = (unsigned char)newCmd[i];
+		for(i = 0; i < cnt + 1; i++)
+		{
+			checksum = checksum + newCmd[i];
+			cmdString[i+1] = newCmd[i];
+		}
+		cmdString[cnt+1] = (unsigned char)(checksum);
+		cmdString[cnt+2] = '!';
+		cmdStringLen = cnt + 3;	
 	}
+	else
+	{
+		for(i = 0; i < cnt + 1; i++)
+		{
+			cmdString[i+1] = newCmd[i];
+		}
+		cmdString[cnt+1] = '!';
+		cmdStringLen = cnt + 2;	
+	}
+	
 
+	
 	return OK;
 }
 
-/* ******************************** */
-/* Displays string length		 	*/
-/* ******************************** */
- void getCmdStringLen(void)
-{
-	printf("String length:%u",cmdStringLen);
-}
 
-
-/* ************************** */
-/* Resets the command string */  
-/* ************************** */
 int resetCmdString(void)
 {
 	cmdStringLen = 0;		
