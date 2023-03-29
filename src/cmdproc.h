@@ -12,14 +12,14 @@
 
 /** \brief Enum with error codes
  * 
- *  0: Executed function with success		                                                          	    
- * -1: empty string          
- * -2: an invalid command was found                         
- * -3: a CS error is detected (command not executed)        
- * -4: string format is wrong                               
- * -5: string size is full and a new char is inputted 						
- * -6: wrong CheckSum value 	
- * -7: String to long to be command
+ *  0: Executed function with success;		                                                          	    
+ * -1: empty string;          
+ * -2: an invalid command was found;                         
+ * -3: a CS error is detected (command not executed);        
+ * -4: string format is wrong;                               
+ * -5: string size is full and a new char is inputted; 						
+ * -6: wrong CheckSum value; 	
+ * -7: String to long to be command;
  * 							*/
  
 enum error{ 	OVF_STR = -7,
@@ -34,14 +34,19 @@ enum error{ 	OVF_STR = -7,
 
 /* Function prototypes */
 /**
- * \brief function responsible for processing the command string
+ * \brief Function responsible for processing the command string
  * 
- * Comands:
- * P: Atributs values to Kp, Ti and Td
- * S: Returns values of setpoint, output, error
- * R: Resets values of Kp, Ti and Td ('0')
- * A: Atributs values to Kp, Ti and Td with ascii convertion
- * \returns 0: OK -1:Empty String -2:Invalid Cmd -3:Cmd with errors -4: String format wrong -6: Error Checksum 
+ * Comands\n
+ *   P: Atributs values Kp, Ti and Td;\n
+ *   S: Returns values of setpoint, output, error;\n
+ *   R: Resets values of Kp, Ti and Td ('0');\n
+ *   A: Atributs values to Kp, Ti and Td with ascii convertion;
+ * \returns 0: OK;\n
+ *  -1:Empty String;\n
+ *  -2:Invalid Cmd;\n
+ *  -3:Cmd with errors;\n
+ *  -4: String format wrong;\n
+ *  -6: Error Checksum; 
  */
 int cmdProcessor(void);
 
@@ -53,15 +58,15 @@ int cmdProcessor(void);
 int newCmdChar(unsigned char newChar);
 
 /**
- * \brief function responsible for reset command string
+ * \brief Function responsible for reset command string
  * \returns 0: OK
  */
 int resetCmdString(void);
 
 /**
- * \brief function responsible for insert a string in command string
+ * \brief Function responsible for insert a string in command string
  * \param string to be turned into a command
- * \returns 0: OK -7: string too big 
+ * \returns 0: OK\n -7: string too big 
  */
 int newCmdStr(char* newCmd);
 
@@ -75,7 +80,7 @@ int newCmdCharASCII(unsigned char newChar);
 
 /**
  * \brief Prints command in cmdString in ascii for debug
- * \returns 0: OK -1: Empty string
+ * \returns 0: OK\n -1: Empty string
  */
 int stringDebug(void);
 
