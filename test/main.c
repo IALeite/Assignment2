@@ -153,6 +153,10 @@ void test_newCmdStr(void){
 	char test_string_3[]= "S\0";
 	TEST_ASSERT_EQUAL_INT(0,newCmdStr(test_string_3));
 	TEST_ASSERT_EQUAL_INT_MESSAGE(0,cmdProcessor(),"S cmd");
+	
+	char test_string_4[]= "\0";
+	TEST_ASSERT_EQUAL_INT(0,newCmdStr(test_string_4));
+	TEST_ASSERT_EQUAL_INT_MESSAGE(-2,cmdProcessor(),"Empty cmd");
 }
 
 
@@ -170,7 +174,11 @@ void test_cmdProcessorASCII(void){
 	TEST_ASSERT_EQUAL_INT(1, Kp);
 	TEST_ASSERT_EQUAL_INT(10, Ti);
 	TEST_ASSERT_EQUAL_INT(24, Td);	
+}
 
+void test_stringDebug_empty(void){
+	resetCmdString();
+	TEST_ASSERT_EQUAL_INT(-1,stringDebug());
 }
 
 
@@ -188,5 +196,6 @@ int main(void)
 	RUN_TEST(test_cmdProcessor_S);
 	RUN_TEST(test_newCmdStr);
 	RUN_TEST(test_cmdProcessorASCII);
+	RUN_TEST(test_stringDebug_empty);
 	return UNITY_END();
 }

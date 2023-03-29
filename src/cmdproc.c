@@ -1,14 +1,3 @@
-/* ***************************************************** */
-/* SETR 22/23, Paulo Pedreiras                           */
-/* Base code for Unit Testing                            */
-/*    Simple example of command processor                */
-/*    Note that there are several simplifications        */
-/*    E.g. Kp, Ti and Td usually are not integer values  */
-/*    Code can (and should) be improved. E.g. error      */ 
-/*        codes are "magic numbers" in the middle of the */
-/*        code instead of being (defined) text literals  */
-/* ***************************************************** */
-
 #include <stdio.h>
 
 #include "cmdproc.h"
@@ -94,9 +83,9 @@ int cmdProcessor(void)
 					resetCmdString();
 					return CS_ERR;
 				}
-				Kp = 0;
-				Ti = 0;
-				Td = 0;
+				Kp = '0';
+				Ti = '0';
+				Td = '0';
 				resetCmdString();
 				break;
 
@@ -248,7 +237,11 @@ int newCmdCharASCII(unsigned char newChar)
 }
 
 
-void stringDebug(void){
+int stringDebug(void){
+	
+	if(cmdStringLen == 0)
+		return EMPTY_STRING;
+		
 	printf("%c",cmdString[0]);
 	printf("%c",cmdString[1]);
 	int i;
@@ -258,6 +251,7 @@ void stringDebug(void){
 			printf(" ");
 	}
 	printf("\n");
+	return OK;
 }
 
 

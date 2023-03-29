@@ -5,7 +5,7 @@
 #define SOF_SYM '#'	          /* Start of Frame Symbol */
 #define EOF_SYM '!'           /* End of Frame Symbol */
 
-/**\file cmdProc
+/**\file cmdproc.h
  *
  * */
 
@@ -22,7 +22,7 @@
  * -7: String to long to be command
  * 							*/
  
-enum{ 	OVF_STR = -7,
+enum error{ 	OVF_STR = -7,
 		ERR_SUM,			/* -6 */	
 		STR_FULL,			/* -5 */
 		STR_FORMAT_ERR,		/* -4 */
@@ -35,12 +35,19 @@ enum{ 	OVF_STR = -7,
 /* Function prototypes */
 /**
  * \brief function responsible for processing the command string
+ * 
+ * Comands:
+ * P: Atributs values to Kp, Ti and Td
+ * S: Returns values of setpoint, output, error
+ * R: Resets values of Kp, Ti and Td ('0')
+ * A: Atributs values to Kp, Ti and Td with ascii convertion
  * \returns 0: OK -1:Empty String -2:Invalid Cmd -3:Cmd with errors -4: String format wrong -6: Error Checksum 
  */
 int cmdProcessor(void);
 
 /**
  * \brief function responsible for insert a new char in command string
+ * \param char new character
  * \returns 0: OK -5: string full
  */
 int newCmdChar(unsigned char newChar);
@@ -53,17 +60,29 @@ int resetCmdString(void);
 
 /**
  * \brief function responsible for insert a string in command string
+ * \param string to be turned into a command
  * \returns 0: OK -7: string too big 
  */
 int newCmdStr(char* newCmd);
 
 
-int cmdProcessorASCII(void);
-
+/**
+ * \brief Converts value in ASCII char and writes it in command string
+ * \param char new character
+ * \returns 0: OK -5: string full
+ */
 int newCmdCharASCII(unsigned char newChar);
 
-void stringDebug(void);
+/**
+ * \brief Prints command in cmdString in ascii for debug
+ * \returns 0: OK -1: Empty string
+ */
+int stringDebug(void);
 
+/**
+ * \brief Calculates checksum
+ * \returns Check Sum
+ */
 unsigned char checkSumCalc(void);
 
 #endif
